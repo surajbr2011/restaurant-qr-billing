@@ -15,26 +15,15 @@ const allowedOrigins = process.env.CORS_ORIGIN
 
 const io = socketIo(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*')) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      // Don't fail hard, just return false or a permissive fallback for now to debug
-      console.log('CORS blocked:', origin);
-      return callback(null, false);
-    }
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true
-}
 }));
 app.use(express.json());
 
