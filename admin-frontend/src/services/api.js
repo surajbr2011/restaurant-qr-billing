@@ -54,4 +54,11 @@ export const menuAPI = {
   deleteMenuItem: (itemId) => api.delete(`/menu/${itemId}`),
 };
 
+export const qrCodeAPI = {
+  getAll: () => api.get('/qrcode/all'),
+  generate: (data) => api.post('/qrcode/generate', data),
+  regenerate: (tableId) => api.post(`/qrcode/regenerate/${tableId}`),
+  delete: (tableId) => api.delete(`/qrcode/${tableId}`),
+};
+
 export default api;
