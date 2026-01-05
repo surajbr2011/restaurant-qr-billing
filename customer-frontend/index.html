@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Order</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="config.js"></script>
+    <!-- Socket.io will be loaded dynamically -->
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🍽️ Restaurant</h1>
+            <div class="table-info">
+                Table: <span id="table-number-display">?</span>
+            </div>
+        </header>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-spinner"></div>
+            <p id="loading-text">Initializing...</p>
+        </div>
+
+        <!-- Menu Screen -->
+        <div id="menu-screen" class="screen">
+            <div class="categories">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="Main Course">Main Course</button>
+                <button class="category-btn" data-category="Beverage">Beverages</button>
+                <button class="category-btn" data-category="Dessert">Desserts</button>
+            </div>
+
+            <div class="menu-items" id="menu-items">
+                <!-- Menu items will be loaded here -->
+            </div>
+
+            <!-- Cart Footer -->
+            <div class="cart-footer">
+                <div class="cart-summary">
+                    <span id="cart-count">0 items</span>
+                    <span id="cart-total">Total: ₹0</span>
+                </div>
+                <button id="view-cart-btn" class="btn-primary" disabled>
+                    View Cart & Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Cart Screen -->
+        <div id="cart-screen" class="screen">
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('menu-screen')">← Back</button>
+                <h2>Your Order</h2>
+            </div>
+
+            <div class="cart-items" id="cart-items">
+                <!-- Cart items will be displayed here -->
+            </div>
+
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal-amount">₹0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Amount:</span>
+                    <span id="total-amount">₹0</span>
+                </div>
+                <button id="place-order-btn" class="btn-primary" disabled>
+                    Place Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Order Placed Screen -->
+        <div id="order-placed-screen" class="screen">
+            <div class="status-container">
+                <div class="status-icon">✅</div>
+                <h2>Order Placed Successfully!</h2>
+                <p>Your order has been sent to the kitchen.</p>
+                <div class="order-details">
+                    <p><strong>Table:</strong> <span id="order-table-number">?</span></p>
+                    <p><strong>Order ID:</strong> <span id="order-id">?</span></p>
+                    <p><strong>Total:</strong> <span id="order-total">₹0</span></p>
+                </div>
+                <p class="waiting-message">Waiting for bill preparation...</p>
+            </div>
+        </div>
+
+        <!-- Bill Ready Screen -->
+        <div id="bill-ready-screen" class="screen">
+            <div class="bill-container">
+                <h2>💰 Your Bill is Ready</h2>
+
+                <div class="bill-details">
+                    <div class="bill-header">
+                        <h3>Restaurant Bill</h3>
+                        <p>Table: <span id="bill-table-number">?</span></p>
+                        <p>Order ID: <span id="bill-order-id">?</span></p>
+                    </div>
+
+                    <div class="bill-items" id="bill-items">
+                        <!-- Bill items will be loaded here -->
+                    </div>
+
+                    <div class="bill-total">
+                        <strong>Total: <span id="bill-total-amount">₹0</span></strong>
+                    </div>
+                </div>
+
+                <div class="payment-section">
+                    <h3>Scan to Pay</h3>
+                    <div id="payment-qr-code"></div>
+                    <p class="payment-note">Scan this QR code with your UPI app to pay</p>
+                    <button onclick="checkPaymentStatus()" class="btn-secondary">
+                        I've Paid
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="utils/api.js"></script>
+    <script src="utils/qr-generator.js"></script>
+    <script src="components/menu.js"></script>
+    <script src="components/cart.js"></script>
+    <script src="components/bill.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

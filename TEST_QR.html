@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QR Test - Redirecting...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f5f5f5;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .url {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            word-break: break-all;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🍽️ Restaurant QR Test</h1>
+        <p>Click the button below to test the customer frontend:</p>
+
+        <div class="url" id="test-url">Loading...</div>
+
+        <button onclick="openTestUrl()">Open Test Page</button>
+        <button onclick="copyUrl()">Copy URL</button>
+
+        <p style="margin-top: 20px; color: #666; font-size: 14px;">
+            This will open Table T-001 with a valid QR token
+        </p>
+    </div>
+
+    <script>
+        let testUrl = '';
+
+        // Fetch the test URL from backend
+        fetch('http://localhost:5001/api/qrcode/table/T-001')
+            .then(res => res.json())
+            .then(data => {
+                const token = encodeURIComponent(data.qrToken);
+                testUrl = `http://192.168.1.6:3001?token=${token}`;
+                document.getElementById('test-url').textContent = testUrl;
+            })
+            .catch(err => {
+                document.getElementById('test-url').textContent = 'Error loading URL: ' + err.message;
+                document.getElementById('test-url').style.color = 'red';
+            });
+
+        function openTestUrl() {
+            if (testUrl) {
+                window.open(testUrl, '_blank');
+            } else {
+                alert('URL not loaded yet. Please wait...');
+            }
+        }
+
+        function copyUrl() {
+            if (testUrl) {
+                navigator.clipboard.writeText(testUrl).then(() => {
+                    alert('URL copied to clipboard!');
+                }).catch(err => {
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = testUrl;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('URL copied to clipboard!');
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

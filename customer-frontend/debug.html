@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Test - Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .info {
+            color: blue;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Mobile Debug Test</h1>
+
+    <div class="test-box">
+        <h2>1. Connection Info</h2>
+        <p><strong>Your Device IP:</strong> <span id="device-info">Loading...</span></p>
+        <p><strong>Page URL:</strong> <span id="page-url"></span></p>
+        <p><strong>Hostname:</strong> <span id="hostname"></span></p>
+    </div>
+
+    <div class="test-box">
+        <h2>2. Backend API Test</h2>
+        <button onclick="testBackend()">Test Backend Connection</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>3. QR Token Test</h2>
+        <p>Token from URL: <span id="token-status">Checking...</span></p>
+        <button onclick="testQRValidation()">Validate QR Token</button>
+        <div id="qr-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>4. JavaScript Console</h2>
+        <div id="console-log"></div>
+    </div>
+
+    <script>
+        // Override console.log to display on page
+        const consoleDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            const p = document.createElement('p');
+            p.textContent = args.join(' ');
+            consoleDiv.appendChild(p);
+        };
+
+        // Display connection info
+        document.getElementById('page-url').textContent = window.location.href;
+        document.getElementById('hostname').textContent = window.location.hostname;
+
+        // Get device info
+        document.getElementById('device-info').textContent =
+            `${window.location.hostname} (${navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'})`;
+
+        // Check for QR token
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const tokenStatus = document.getElementById('token-status');
+
+        if (token) {
+            tokenStatus.innerHTML = `<span class="success">✅ Found (${token.substring(0, 50)}...)</span>`;
+        } else {
+            tokenStatus.innerHTML = '<span class="error">❌ No token in URL</span>';
+        }
+
+        // Determine API URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5001'
+            : `http://${window.location.hostname}:5001`;
+
+        console.log('API URL:', API_URL);
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<p class="info">Testing...</p>';
+
+            try {
+                console.log('Fetching:', `${API_URL}/api/health`);
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Backend Connected!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                console.log('Backend response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Backend Error</p>
+                    <pre>${error.message}</pre>
+                    <p>Make sure backend is running on: ${API_URL}</p>
+                `;
+                console.error('Backend error:', error);
+            }
+        }
+
+        async function testQRValidation() {
+            const resultDiv = document.getElementById('qr-result');
+
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token to validate. Add ?token=... to URL</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="info">Validating...</p>';
+
+            try {
+                console.log('Validating token...');
+                const response = await fetch(`${API_URL}/api/qrcode/validate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+
+                if (data.valid) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Token is Valid!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Token is Invalid</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+                console.log('Validation response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Validation Error</p>
+                    <pre>${error.message}</pre>
+                `;
+                console.error('Validation error:', error);
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded');
+            console.log('Testing backend automatically...');
+            setTimeout(testBackend, 1000);
+        });
+    </script>
+</body>
+
+</html>

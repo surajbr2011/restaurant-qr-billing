@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .info {
+            color: blue;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 System Diagnostic</h1>
+
+    <div class="test-box">
+        <h2>1. Backend API Test</h2>
+        <button onclick="testBackend()">Test Backend (Port 5001)</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>2. Customer Frontend Test</h2>
+        <button onclick="testFrontend()">Test Frontend (Port 3001)</button>
+        <div id="frontend-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>3. Get QR Token</h2>
+        <button onclick="getToken()">Get Test Token</button>
+        <div id="token-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>4. Open Customer Page</h2>
+        <button onclick="openCustomerPage()" id="open-btn" disabled>Open Customer Frontend</button>
+        <div id="open-result"></div>
+    </div>
+
+    <script>
+        let testToken = null;
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<p class="info">Testing...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5001/api/health');
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Backend is working!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Backend Error: ${error.message}</p>
+                    <p>Make sure backend is running: npm run dev in backend folder</p>
+                `;
+            }
+        }
+
+        async function testFrontend() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.innerHTML = '<p class="info">Testing...</p>';
+
+            try {
+                const response = await fetch('http://localhost:3001/');
+                const text = await response.text();
+
+                if (text.includes('Restaurant')) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Customer Frontend is working!</p>
+                        <p>Server is responding on port 3001</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Unexpected response from port 3001</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Frontend Error: ${error.message}</p>
+                    <p>Make sure customer-frontend is running: npm run dev in customer-frontend folder</p>
+                `;
+            }
+        }
+
+        async function getToken() {
+            const resultDiv = document.getElementById('token-result');
+            resultDiv.innerHTML = '<p class="info">Getting token...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5001/api/qrcode/table/T-001');
+                const data = await response.json();
+
+                testToken = data.qrToken;
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Token retrieved!</p>
+                    <p>Table: ${data.tableId}</p>
+                    <p>Token: ${testToken.substring(0, 50)}...</p>
+                `;
+
+                document.getElementById('open-btn').disabled = false;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        function openCustomerPage() {
+            if (!testToken) {
+                alert('Please get token first!');
+                return;
+            }
+
+            const url = `http://localhost:3001?token=${encodeURIComponent(testToken)}`;
+            const resultDiv = document.getElementById('open-result');
+
+            resultDiv.innerHTML = `
+                <p class="success">Opening customer page...</p>
+                <p>URL: <a href="${url}" target="_blank">${url.substring(0, 80)}...</a></p>
+            `;
+
+            window.open(url, '_blank');
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testBackend();
+                testFrontend();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

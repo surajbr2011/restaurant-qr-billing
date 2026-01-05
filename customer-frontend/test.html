@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 QR System Diagnostic Test</h1>
+
+    <div class="test-section">
+        <h2>1. Backend Health Check</h2>
+        <button onclick="testBackendHealth()">Test Backend</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Get QR Token</h2>
+        <button onclick="getQRToken()">Get Test Token</button>
+        <div id="token-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Validate QR Token</h2>
+        <input type="text" id="token-input" placeholder="Paste QR token here" style="width: 100%; padding: 8px; margin: 10px 0;">
+        <button onclick="validateToken()">Validate Token</button>
+        <div id="validate-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Create Customer Session</h2>
+        <button onclick="createSession()">Create Session</button>
+        <div id="session-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Get Menu</h2>
+        <button onclick="getMenu()">Fetch Menu</button>
+        <div id="menu-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001';
+        let currentToken = null;
+
+        async function testBackendHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.className = 'result info';
+
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+                
+                resultDiv.textContent = `✅ Backend is running!\n\n${JSON.stringify(data, null, 2)}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}\n\nMake sure backend is running on port 5001`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function getQRToken() {
+            const resultDiv = document.getElementById('token-result');
+            resultDiv.textContent = 'Fetching...';
+            resultDiv.className = 'result info';
+
+            try {
+                const response = await fetch(`${API_URL}/api/qrcode/table/T-001`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.qrToken;
+                    document.getElementById('token-input').value = currentToken;
+                    
+                    resultDiv.textContent = `✅ QR Token Retrieved!\n\nTable: ${data.tableId}\nZone: ${data.zone}\n\nToken:\n${currentToken}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    throw new Error(data.message || 'Failed to get QR code');
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function validateToken() {
+            const resultDiv = document.getElementById('validate-result');
+            const token = document.getElementById('token-input').value;
+
+            if (!token) {
+                resultDiv.textContent = '❌ Please enter a token first';
+                resultDiv.className = 'result error';
+                return;
+            }
+
+            resultDiv.textContent = 'Validating...';
+            resultDiv.className = 'result info';
+
+            try {
+                const response = await fetch(`${API_URL}/api/qrcode/validate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    resultDiv.textContent = `✅ Token is VALID!\n\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                    currentToken = token;
+                } else {
+                    resultDiv.textContent = `❌ Token is INVALID\n\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function createSession() {
+            const resultDiv = document.getElementById('session-result');
+            
+            if (!currentToken) {
+                resultDiv.textContent = '❌ Please get and validate a token first';
+                resultDiv.className = 'result error';
+                return;
+            }
+
+            resultDiv.textContent = 'Creating session...';
+            resultDiv.className = 'result info';
+
+            try {
+                const response = await fetch(`${API_URL}/api/customer/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        qrToken: currentToken,
+                        customerName: 'Test Customer',
+                        guestCount: 2
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ Session Created!\n\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ Failed to create session\n\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function getMenu() {
+            const resultDiv = document.getElementById('menu-result');
+            resultDiv.textContent = 'Fetching menu...';
+            resultDiv.className = 'result info';
+
+            try {
+                const response = await fetch(`${API_URL}/api/menu`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ Menu Retrieved!\n\nTotal items: ${data.length}\n\n${JSON.stringify(data.slice(0, 3), null, 2)}\n\n... and ${data.length - 3} more items`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ Failed to get menu\n\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('QR System Test Page Loaded');
+            console.log('API URL:', API_URL);
+        });
+    </script>
+</body>
+</html>
