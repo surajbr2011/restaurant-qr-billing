@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex').slice(0, 32);
+const ENCRYPTION_KEY = (process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex')).slice(0, 32);
 const IV_LENGTH = 16;
 
 class QRCodeGenerator {
