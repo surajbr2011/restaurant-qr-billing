@@ -22,8 +22,8 @@ const io = socketIo(server, {
 
 // Middleware
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: '*', // Allow ALL origins (Wildcard)
+  credentials: false // Must be false when using wildcard
 }));
 app.use(express.json());
 
