@@ -25,11 +25,16 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    if (allowedOrigins.includes('*')) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+      // Don't fail hard, just return false or a permissive fallback for now to debug
+      console.log('CORS blocked:', origin);
+      return callback(null, false);
     }
     return callback(null, true);
-  }
+  },
+  credentials: true
+}
 }));
 app.use(express.json());
 
