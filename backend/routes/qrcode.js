@@ -27,7 +27,7 @@ router.post('/generate', async (req, res) => {
         });
 
         // Generate QR code image
-        const baseUrl = process.env.CUSTOMER_FRONTEND_URL || 'https://fluffy-twilight-191e01.netlify.app';
+        const baseUrl = process.env.CUSTOMER_FRONTEND_URL || 'https://monumental-creponne-8e56ad.netlify.app';
         const qrCodeUrl = await QRCodeGenerator.generateQRImage(qrToken, baseUrl);
 
         // Save to database
@@ -95,7 +95,7 @@ router.post('/regenerate/:tableId', async (req, res) => {
         });
 
         // Generate new QR image
-        const baseUrl = process.env.CUSTOMER_FRONTEND_URL || 'https://fluffy-twilight-191e01.netlify.app';
+        const baseUrl = process.env.CUSTOMER_FRONTEND_URL || 'https://monumental-creponne-8e56ad.netlify.app';
         const qrCodeUrl = await QRCodeGenerator.generateQRImage(qrToken, baseUrl);
 
         // Update database
