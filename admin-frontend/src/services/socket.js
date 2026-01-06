@@ -6,8 +6,9 @@ class SocketService {
   }
 
   connect() {
-    this.socket = io('http://localhost:5001/api');
-    
+    const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    this.socket = io(SOCKET_URL);
+
     this.socket.on('connect', () => {
       console.log('Connected to server');
       // Join admin room for order updates
