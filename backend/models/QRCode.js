@@ -12,7 +12,7 @@ const qrCodeSchema = new mongoose.Schema({
     },
     zone: {
         type: String,
-        enum: ['indoor', 'outdoor', 'vip', 'bar', 'lounge'],
+        enum: ['indoor', 'outdoor', 'vip', 'bar', 'lounge', 'Main Hall', 'terrace', 'garden'],
         default: 'indoor'
     },
     qrToken: {
