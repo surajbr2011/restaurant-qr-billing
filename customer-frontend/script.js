@@ -1,16 +1,8 @@
 // Configuration - Dynamically set or load from external config
 const CONFIG = {
-    API_URL: window.APP_CONFIG?.API_URL || (
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:5001'
-            : `http://${window.location.hostname}:5001`
-    ),
+    API_URL: window.APP_CONFIG?.API_URL || 'https://restaurant-qr-billing.onrender.com',
 
-    SOCKET_URL: window.APP_CONFIG?.API_URL || (
-        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:5001'
-            : `http://${window.location.hostname}:5001`
-    )
+    SOCKET_URL: window.APP_CONFIG?.API_URL || 'https://restaurant-qr-billing.onrender.com'
 };
 
 // Global variables

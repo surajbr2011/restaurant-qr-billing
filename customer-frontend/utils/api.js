@@ -1,9 +1,7 @@
 // Dynamically set API URL based on how the page is accessed
 const getApiBaseUrl = () => {
     if (window.APP_CONFIG?.API_URL) return `${window.APP_CONFIG.API_URL}/api`;
-    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5001/api'
-        : `http://${window.location.hostname}:5001/api`;
+    return 'https://restaurant-qr-billing.onrender.com/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
