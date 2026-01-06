@@ -18,6 +18,74 @@ const OrderCard = ({ order, onOrderUpdate }) => {
     }
   };
 
+  const handlePrint = () => {
+    const printWindow = window.open('', '', 'width=300,height=600');
+
+    const itemsHtml = order.items.map(item => `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <span>${item.quantity} x ${item.name}</span>
+        <span>₹${item.priceAtOrder * item.quantity}</span>
+      </div>
+    `).join('');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Bill - Table ${order.tableId}</title>
+          <style>
+            body { 
+              font-family: 'Courier New', monospace; 
+              width: 80mm; 
+              padding: 10px; 
+              font-size: 14px;
+            }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header h2 { margin: 0; font-size: 20px; text-transform: uppercase; }
+            .divider { border-top: 1px dashed #000; margin: 10px 0; }
+            .total { font-weight: bold; font-size: 16px; margin-top: 15px; text-align: right; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>RESTAURANT NAME</h2>
+            <p>123 Street, City<br>Tel: +91 1234567890</p>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div>
+            <p><strong>Table: ${order.tableId}</strong></p>
+            <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            <p>Order ID: #${order._id.slice(-6).toUpperCase()}</p>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="items">
+            ${itemsHtml}
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="total">
+            Total Amount: ₹${order.totalAmount}
+          </div>
+          
+          <div class="footer">
+            <p>Thank you for dining with us!</p>
+            <p>See you again soon.</p>
+          </div>
+          
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const orderTime = new Date(order.createdAt).toLocaleTimeString();
 
@@ -36,16 +104,15 @@ const OrderCard = ({ order, onOrderUpdate }) => {
               Total: ₹{order.totalAmount}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              order.status === 'pending' 
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'pending'
                 ? 'bg-yellow-100 text-yellow-800'
                 : 'bg-green-100 text-green-800'
-            }`}>
+              }`}>
               {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
             </span>
-            
+
             <button
               onClick={() => setExpanded(!expanded)}
               className="text-gray-400 hover:text-gray-600 p-1"
@@ -70,8 +137,15 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-4 flex justify-end space-x-3">
+              <button
+                onClick={handlePrint}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+              >
+                <span className="mr-2">🖨️</span> Print
+              </button>
+
               {order.status === 'pending' && (
                 <button
                   onClick={handleGenerateBill}
@@ -80,12 +154,6 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 >
                   {loading ? 'Generating...' : 'Generate Bill'}
                 </button>
-              )}
-              
-              {order.status === 'billed' && (
-                <span className="text-green-600 text-sm font-medium">
-                  Bill Sent to Customer
-                </span>
               )}
             </div>
           </div>
