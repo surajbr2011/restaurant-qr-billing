@@ -275,6 +275,18 @@ function setupEventListeners() {
     });
 
     document.getElementById('place-order-btn').addEventListener('click', placeOrder);
+
+    document.getElementById('request-bill-btn').addEventListener('click', () => {
+        if (socket && currentSession) {
+            socket.emit('request_bill', currentSession.tableId);
+            const btn = document.getElementById('request-bill-btn');
+            btn.textContent = 'Bill Requested ✅';
+            btn.disabled = true;
+            alert('Bill requested! Waiter will arrive shortly.');
+        } else {
+            alert('Not connected to server. Please notify waiter manually.');
+        }
+    });
 }
 
 async function placeOrder() {

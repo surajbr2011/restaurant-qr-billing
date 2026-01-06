@@ -48,6 +48,12 @@ io.on('connection', (socket) => {
     console.log(`Client joined table room: table_${tableId}`);
   });
 
+  // Handle bill request from customer
+  socket.on('request_bill', (tableId) => {
+    console.log(`Table ${tableId} requested bill`);
+    io.to('admin_room').emit('bill_requested', { tableId, timestamp: new Date() });
+  });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
